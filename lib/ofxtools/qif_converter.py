@@ -30,7 +30,8 @@ from ofx.builder import *
 class QifConverter:
     def __init__(self, qif, fid="UNKNOWN", org="UNKNOWN", bankid="UNKNOWN",
                  accttype="UNKNOWN", acctid="UNKNOWN", balance="UNKNOWN",
-                 curdef=None, lang="ENG", dayfirst=False, debug=False):
+                 curdef=None, lang="ENG", dayfirst=False, debug=False,
+                 number_as_id=False):
         self.qif      = qif
         self.fid      = fid
         self.org      = org
@@ -42,6 +43,7 @@ class QifConverter:
         self.lang     = lang
         self.debug    = debug
         self.dayfirst = dayfirst
+        self.number_as_id = number_as_id
 
         self.parsed_qif = None
 
@@ -227,7 +229,15 @@ class QifConverter:
     def _clean_txn_list(self, txn_list):
         for txn_obj in txn_list:
             try:
-                txn = self._clean_txn(txn_obj)
+                txn = txn_obj.asDict()
+
+                if self.number_as_id:
+                    number = txn.get("Number", None)
+                    if number is not None:
+                        txn["ID"] = number
+                        del txn["Number"]
+
+                txn = self._clean_txn(txn)
                 txn_date = txn["Date"]
                 txn_date_list = self.txns_by_date.get(txn_date, [])
                 txn_date_list.append(txn)
@@ -259,7 +269,7 @@ class QifConverter:
             self.start_date = strftime("%Y%m%d", localtime())
             self.end_date   = self.start_date
 
-    def _clean_txn(self, txn_obj):
+    def _clean_txn(self, txn):
         # This is sort of the brute-force method of the converter.  It
         # looks at the data we get from the bank and tries as hard as
         # possible to make best-effort guesses about what the OFX 2.0
@@ -269,7 +279,6 @@ class QifConverter:
         # the txn_obj shouldn't be in the data, it will throw a ValueError.
         # Otherwise, it will return a transaction cleaned to the best
         # of our abilities.
-        txn = txn_obj.asDict()
         self._clean_txn_date(txn)
         self._clean_txn_amount(txn)
         self._clean_txn_number(txn)
@@ -589,11 +598,13 @@ class QifConverter:
                 txn_date = txn.get("Date", "UNKNOWN")
                 txn_amt  = txn.get("Amount", "00.00")
 
-                # Make a synthetic transaction ID using as many
-                # uniqueness guarantors as possible.
-                txn["ID"] = "%s-%s-%s-%s-%s" % (self.org, self.accttype,
-                                                txn_date, txn_index,
-                                                txn_amt)
+                if not self.number_as_id:
+                    # Make a synthetic transaction ID using as many
+                    # uniqueness guarantors as possible.
+                    txn["ID"] = "%s-%s-%s-%s-%s" % (self.org, self.accttype,
+                                                    txn_date, txn_index,
+                                                    txn_amt)
+
                 txns += self._ofx_txn(txn)
                 txn_index -= 1
 
