@@ -264,7 +264,33 @@ class QifConverterTests(unittest.TestCase):
         self.assertEqual(len(txn_list), 1)
         txn = txn_list[0]
         self.assertEqual(txn["Amount"], "25.42")
-    
+
+    def test_dollar_amount(self):
+        qiftext = textwrap.dedent('''\
+        !Type:Bank
+        D02/01/2005
+        T$26.42
+        ^
+        ''')
+        converter = ofxtools.QifConverter(qiftext)
+        txn_list = converter.txns_by_date["20050201"]
+        self.assertEqual(len(txn_list), 1)
+        txn = txn_list[0]
+        self.assertEqual(txn["Amount"], "26.42")
+
+    def test_pound_amount(self):
+        qiftext = textwrap.dedent('''\
+        !Type:Bank
+        D02/01/2005
+        T-\xa326.42
+        ^
+        ''')
+        converter = ofxtools.QifConverter(qiftext)
+        txn_list = converter.txns_by_date["20050201"]
+        self.assertEqual(len(txn_list), 1)
+        txn = txn_list[0]
+        self.assertEqual(txn["Amount"], "-26.42")
+
     def test_trailing_minus(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank

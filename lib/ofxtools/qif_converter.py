@@ -318,8 +318,20 @@ class QifConverter:
         # Okay, now strip out whitespace padding.
         txn_amount = txn_amount.strip()
 
-        # Some QIF files have dollar signs in the amount.  Hey, why not?
-        txn_amount = txn_amount.replace('$', '', 1)
+        # Some QIF files have dollar signs in the amount
+        # Some QIF files have sterling signs in the amount (in latin1 encoding :/ )
+        # Let's assume this is going to be true in lots of places
+        for currency_sign in (
+                '$', # USD and other currencies in
+                # most places and most encodings
+                '\xa3', # GBP latin1
+                '\xc2\xa3', # GBP utf-8
+                '\xe2\x82\xac', # Euro utf8
+                '\xc2\xa5', # Yuan utf8
+                '\x810\x846', # Yuan Guobiao
+                '\xa2D', # Yuan Big5
+                ):
+            txn_amount = txn_amount.replace(currency_sign, '', 1)
 
         # Some QIF files (usually from non-US banks) put the minus sign at
         # the end of the amount, rather than at the beginning. Let's fix that.
