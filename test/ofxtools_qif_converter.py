@@ -1,11 +1,11 @@
 # Copyright 2005-2010 Wesabe, Inc.
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@ from time import localtime, strftime
 class QifConverterTests(unittest.TestCase):
     def setUp(self):
         pass
-    
+
     def test_bank_stmttype(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -34,7 +34,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertEqual(converter.accttype, "CHECKING")
-    
+
     def test_ccard_stmttype(self):
         qiftext = textwrap.dedent('''\
         !Type:CCard
@@ -43,7 +43,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertEqual(converter.accttype, "CREDITCARD")
-    
+
     def test_no_stmttype(self):
         qiftext = textwrap.dedent('''\
         D01/13/2005
@@ -51,7 +51,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertEqual(converter.accttype, "CHECKING")
-    
+
     def test_no_txns(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -60,7 +60,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         self.assertEqual(converter.start_date, today)
         self.assertEqual(converter.end_date, today)
-    
+
     def test_us_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -69,7 +69,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20050113"))
-    
+
     def test_uk_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -78,7 +78,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20050113"))
-    
+
     def test_ambiguous_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -87,7 +87,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20051201"))
-    
+
     def test_mixed_us_dates(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -99,7 +99,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20050112"))
         self.assertTrue(converter.txns_by_date.has_key("20050113"))
-    
+
     def test_mixed_uk_dates(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -111,7 +111,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20050112"))
         self.assertTrue(converter.txns_by_date.has_key("20050113"))
-    
+
     def test_slashfree_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -120,7 +120,7 @@ class QifConverterTests(unittest.TestCase):
         ''')
         converter = ofxtools.QifConverter(qiftext)
         self.assertTrue(converter.txns_by_date.has_key("20051201"))
-    
+
     def test_unparseable_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -128,7 +128,7 @@ class QifConverterTests(unittest.TestCase):
         ^
         ''')
         self.assertRaises(ValueError, ofxtools.QifConverter, qiftext)
-    
+
     def test_len_eight_no_int_date(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -136,7 +136,7 @@ class QifConverterTests(unittest.TestCase):
         ^
         ''')
         self.assertRaises(ValueError, ofxtools.QifConverter, qiftext)
-    
+
     def test_asc_dates(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -147,7 +147,7 @@ class QifConverterTests(unittest.TestCase):
         D02/01/2005
         ^
         D02/01/2005
-        ^        
+        ^
         D02/13/2005
         ^
         ''')
@@ -155,7 +155,7 @@ class QifConverterTests(unittest.TestCase):
         self.assertEqual(converter.start_date, "20050113")
         self.assertEqual(converter.end_date, "20050213")
         self.assertEqual(len(converter.txns_by_date.keys()), 4)
-    
+
     def test_desc_dates(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -164,7 +164,7 @@ class QifConverterTests(unittest.TestCase):
         D02/01/2005
         ^
         D02/01/2005
-        ^        
+        ^
         D01/27/2005
         ^
         D01/13/2005
@@ -174,7 +174,7 @@ class QifConverterTests(unittest.TestCase):
         self.assertEqual(converter.start_date, "20050113")
         self.assertEqual(converter.end_date, "20050213")
         self.assertEqual(len(converter.txns_by_date.keys()), 4)
-    
+
     def test_mixed_dates(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -185,7 +185,7 @@ class QifConverterTests(unittest.TestCase):
         D01/13/2005
         ^
         D02/01/2005
-        ^        
+        ^
         D01/27/2005
         ^
         ''')
@@ -193,7 +193,7 @@ class QifConverterTests(unittest.TestCase):
         self.assertEqual(converter.start_date, "20050113")
         self.assertEqual(converter.end_date, "20050213")
         self.assertEqual(len(converter.txns_by_date.keys()), 4)
-    
+
     def test_default_currency(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -204,7 +204,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         ofx102 = converter.to_ofx102()
         self.assertTrue(ofx102.find('<CURDEF>USD') != -1)
-    
+
     def test_found_currency(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -215,7 +215,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         ofx102 = converter.to_ofx102()
         self.assertTrue(ofx102.find('<CURDEF>EUR') != -1)
-    
+
     def test_explicit_currency(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -226,7 +226,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext, curdef='GBP')
         ofx102 = converter.to_ofx102()
         self.assertTrue(ofx102.find('<CURDEF>GBP') != -1)
-    
+
     def test_amount2(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -237,7 +237,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20050201"][0]
         self.assertEqual(txn["Amount"], "25.42")
-    
+
     def test_bad_amount_precision(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -248,7 +248,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20070125"][0]
         self.assertEqual(txn["Amount"], "417.93")
-    
+
     def test_dash_amount(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -275,7 +275,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20080806"][0]
         self.assertEqual(txn["Amount"], "-26.24")
-    
+
     def test_n_a_number(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -287,7 +287,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20070125"][0]
         self.assertEqual(txn.has_key("Number"), False)
-    
+
     def test_creditcard_number(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -299,7 +299,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20070125"][0]
         self.assertEqual(txn.has_key("Number"), False)
-    
+
     def test_creditcard_stmt_number(self):
         qiftext = textwrap.dedent('''\
         !Type:CCard
@@ -311,7 +311,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20070125"][0]
         self.assertEqual(txn.has_key("Number"), False)
-    
+
     def test_check_stmt_number(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
@@ -323,7 +323,7 @@ class QifConverterTests(unittest.TestCase):
         converter = ofxtools.QifConverter(qiftext)
         txn = converter.txns_by_date["20070125"][0]
         self.assertEqual(txn.get("Type"), "CHECK")
-    
+
     def test_usaa_check(self):
         qiftext = textwrap.dedent('''\
         !Type:Bank
